@@ -49,8 +49,27 @@ EndNote ユーザー向けに、文献の取り込みから参考文献リスト
    - Word の **EndNote タブ → Update Citations and Bibliography** を実行すると、引用が正式な番号に変換され、末尾に **Reference List が自動生成**される。
    - 出力スタイル（Vancouver / 投稿先誌のスタイル）は EndNote の Style で切り替えられる。
 
+### Step 4.5. 引用の検証デモ（AIが作った引用を、AIで検証する）
+
+「生成AIの引用は転記ミスやハルシネーションで誤りうる。だからこそ PubMed の実データで機械的に検証する」という、医学論文執筆で最重要の作法を体験してもらう。
+
+1. **罠入り原稿を見せる**: 作業フォルダの `CADe大腸内視鏡_原稿_検証デモ.md` を提示する。本文4箇所の `{PMID}` 引用のうち**1件のPMIDがあえて誤った数値**にしてある（Wallace論文 `35304117` → `35034117`。この誤PMIDは実在するが大腸内視鏡とは無関係な植物分類学の論文を指す）。
+2. **検証スキルを導入する**: `Agent-Skills-main/pubmed-reference-verifier.skill` をインストールする（本文中引用と参考文献リストの整合性を PubMed MCP で検証するスキル）。
+3. **検証コマンドを実行する**:
+   ```
+   /pubmed-reference-verifier verify CADe大腸内視鏡_原稿_検証デモ.md
+   ```
+4. **検出を確認する**: スキルが Ref #2 を **E003（書誌情報不一致）** として検出し、「PMID 35034117 はグアバ属の植物論文であり本文の記述と一致しない、正しくは `35304117`」と修正案を提示する。本文PMIDと PubMed タイトルの照合表を見せ、「AIが作った引用を AI が機械的に検証できる」点を強調する。
+5. **`fix` モードで自動修正する（任意）**:
+   ```
+   /pubmed-reference-verifier fix CADe大腸内視鏡_原稿_検証デモ.md
+   ```
+   `35034117 → 35304117` の修正がdiffで提示され、確認のうえ適用される。
+
+> 教育上の狙い: 「**AIの引用は信用せず、PubMed 実データで照合する**」という作法を、実際に誤りが検出される体験を通じて伝える。EndNote の「Find Reference Update」（Step 4）と合わせ、**二重の検証**で引用の正確性を担保できることを示す。
+
 ### Step 5. まとめ
 
-「検索式を MeSH＋count で詰める → 取得 → RIS で書き出して EndNote に取り込み（Find Reference Update で補正）→ Word で Update Citations、という一連が Claude だけで回せます」と締める。
+「検索式を MeSH＋count で詰める → 取得 → RIS で書き出して EndNote に取り込み（Find Reference Update で補正）→ 引用は pubmed-reference-verifier スキルで PubMed 照合して検証 → Word で Update Citations、という一連が Claude だけで回せます」と締める。
 
 完了後「次はどのレベルを体験しますか？」と尋ね、`00_START` の Phase 1 に戻る。

@@ -15,7 +15,11 @@
 | `04_システマティックレビュー.md` | レベル4: 系統的レビュー Skill を導入して数値抽出を体験 |
 | `05_スライド生成.md` | レベル5: pptx スキルでスライド生成（デザイン対話決定） |
 | `06_業務効率化ツール_Chrome拡張.md` | レベル6: Chrome 拡張機能（選択範囲QR生成/読取 等）を作り共有 |
-| `skill_pubmed-systematic-review/` | レベル4用 Skill 同梱（`.skill`＋`extracted/SKILL.md`＋README） |
+| `07_メールからカレンダー登録.md` | レベル7: Gmail × カレンダー MCP で未読メール → 予定登録 → Skill 化 |
+| `08_定期実行タスク.md` | レベル8: Cowork の定期タスク実行で朝のブリーフィング（予定 / 新着論文・医学ニュース）を自動生成 |
+| `09_CLI版Code体験.md` | レベル9: Claude Code（CLI）を30分でひと通り体験（Cowork は手順表示、参加者が CLI を操作） |
+| `10_画像分類アプリ.md` | レベル10: 機械学習アプリ（画像分類）を学習〜評価〜予測まで作る（Cowork=offline教材データ、医療画像は Code 版発展） |
+| `Agent-Skills-main/` | 配布用 Skill 一式（`pubmed-systematic-review.skill` ＋ `pubmed-reference-verifier.skill`） |
 | `README_ファシリテーター用.md` | 本ファイル |
 
 ---
@@ -32,8 +36,12 @@
 
 ## 事前準備（ファシリテーター側）
 
-- **MCP 接続の確認**: PubMed MCP（`pubmed_mcp_server2`）、Notion MCP（`https://mcp.notion.com/sse`）、Arxiv MCP。
+- **MCP 接続の確認**: PubMed MCP（`pubmed_mcp_server2`）、Notion MCP（`https://mcp.notion.com/sse`）、Arxiv MCP、**Gmail MCP・Google カレンダー MCP**（レベル7）。
   - 本パック作成時点では **PubMed・Notion は接続確認済み、Arxiv は未接続**。レベル3を使うなら PubMed は必須。
+  - **レベル7は Gmail と Google カレンダーのコネクタが必須**（Claude 標準コネクタ。設定 → コネクタ から追加し OAuth 認証。`Gog-CLI` ではなくこちらを使う）。接続は当日その場でも可能。
+  - **レベル8（定期実行タスク）は PC の電源 ON ＋ Cowork 起動中でないと実行されない**。①予定確認はカレンダー MCP、②論文・ニュースは PubMed MCP ＋ Web検索を使う。体験では「今すぐ試走」で出力を見せてからスケジュール登録する。
+- **レベル9（CLI版 Claude Code）**: 参加者は**自分のターミナルで Claude Code を操作**する（Cowork は手順表示・伴走のみ）。**Claude Code はインストール・認証済みが前提**（未導入者は事前セットアップ推奨。手順書末尾に付録あり）。実ファイルを編集できるため、編集・コミットは確認してから・秘密情報は渡さない、を周知する。
+- **レベル10（機械学習・画像分類）**: 本編は Cowork のサンドボックスで**オフライン動作する公開教材データ（scikit-learn の手書き数字）**を使う（ダウンロード不要）。**医療画像版（MedMNIST）はサンドボックスのネット制限でダウンロード不可のため、デスクトップ版 Code / CLI で実行**する発展扱い。教育デモであり**診断・医療機器ではない**こと、実患者画像は使わないことを必ず周知する。
 - **Skill の確認**: `pptx`（レベル5）、`pubmed-systematic-review`（レベル4）。**レベル4の Skill は本フォルダに同梱済み**（`skill_pubmed-systematic-review/`）。未導入でも当日その場の `.skill` から導入、または `extracted/SKILL.md` を読んで手動進行できる。
 - **配布物**: 参加者にこのフォルダを共有（Dropbox 共有リンク / USB / 事前ダウンロード等）。
 
@@ -49,6 +57,10 @@
 | 4 | レビューを書く人 | Skill・数値抽出・xlsx |
 | 5 | 発表準備をする人 | pptx スキル |
 | 6 | ツールを作ってみたい人 | Chrome 拡張機能（Manifest V3） |
+| 7 | メール処理を自動化したい人 | Gmail MCP・Google カレンダー MCP・Skill 化 |
+| 8 | 毎朝の情報整理を自動化したい人 | 定期実行タスク・カレンダー/PubMed MCP・Web検索 |
+| 9 | CLI版を触ってみたい人 | Claude Code（CLI）・/init・MCP・サブエージェント・Git |
+| 10 | AI（機械学習）を作ってみたい人 | Python・scikit-learn・画像分類・評価/可視化（医療画像は Code 版で MedMNIST） |
 
 ---
 
@@ -58,6 +70,7 @@
 - PubMed 検索は MeSH で検索式を立て、`count` で妥当性を検証してから本検索する作法を全モジュールで徹底。
 - 文献を引用する際は第一著者・雑誌名・発刊年・PubMed リンクを必ず付す。
 - レベル6で作る Chrome 拡張は完全ローカル動作（外部送信なし）。読み込みは「パッケージ化されていない拡張機能」として各自のブラウザに。
+- レベル7では各自の**実メール・実カレンダー**を扱う。カレンダー登録は**必ず確認してから**行い（自動即登録はしない）、機微情報・患者情報は予定のタイトル/説明に転記しない。デモ環境では個人アカウントの取り扱いに留意する。
 
 ---
 
