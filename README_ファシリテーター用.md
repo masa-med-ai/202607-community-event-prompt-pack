@@ -17,8 +17,9 @@
 | `06_業務効率化ツール_Chrome拡張.md` | レベル6: Chrome 拡張機能（選択範囲QR生成/読取 等）を作り共有 |
 | `07_メールからカレンダー登録.md` | レベル7: Gmail × カレンダー MCP で未読メール → 予定登録 → Skill 化 |
 | `08_定期実行タスク.md` | レベル8: Cowork の定期タスク実行で朝のブリーフィング（予定 / 新着論文・医学ニュース）を自動生成 |
-| `09_CLI版Code体験.md` | レベル9: Claude Code（CLI）を30分でひと通り体験（Cowork は手順表示、参加者が CLI を操作） |
+| `09_Desktop版Code体験.md` | レベル9: Claude Code（Desktop＝「Code」タブ）を30分でひと通り体験（Cowork は手順表示、参加者が Code タブを操作。CLI 版は付録） |
 | `10_画像分類アプリ.md` | レベル10: 機械学習アプリ（画像分類）を学習〜評価〜予測まで作る（Cowork=offline教材データ、医療画像は Code 版発展） |
+| `11_自動化の3層_Loop_Schedule_Routine.md` | レベル11: 自動化の3層（Loop / Schedule / Routine）の違いを理解し、定期タスク（Schedule）を1つ実際に作る（loop/Routine は紹介） |
 | `Agent-Skills-main/` | 配布用 Skill 一式（`pubmed-systematic-review.skill` ＋ `pubmed-reference-verifier.skill`） |
 | `README_ファシリテーター用.md` | 本ファイル |
 
@@ -40,8 +41,9 @@
   - 本パック作成時点では **PubMed・Notion は接続確認済み、Arxiv は未接続**。レベル3を使うなら PubMed は必須。
   - **レベル7は Gmail と Google カレンダーのコネクタが必須**（Claude 標準コネクタ。設定 → コネクタ から追加し OAuth 認証。`Gog-CLI` ではなくこちらを使う）。接続は当日その場でも可能。
   - **レベル8（定期実行タスク）は PC の電源 ON ＋ Cowork 起動中でないと実行されない**。①予定確認はカレンダー MCP、②論文・ニュースは PubMed MCP ＋ Web検索を使う。体験では「今すぐ試走」で出力を見せてからスケジュール登録する。
-- **レベル9（CLI版 Claude Code）**: 参加者は**自分のターミナルで Claude Code を操作**する（Cowork は手順表示・伴走のみ）。**Claude Code はインストール・認証済みが前提**（未導入者は事前セットアップ推奨。手順書末尾に付録あり）。実ファイルを編集できるため、編集・コミットは確認してから・秘密情報は渡さない、を周知する。
+- **レベル9（Desktop版 Claude Code）**: 参加者は**自分の Claude Desktop アプリで「Code」タブを操作**する（Cowork は手順表示・伴走のみ）。ターミナルの別ウィンドウは不要で、**同じアプリのタブを切り替えるだけ**。**Claude Desktop にサインイン済み・Code タブが使えること（Pro/Max/Team/Enterprise）が前提**（未導入者は事前セットアップ推奨。手順書末尾に付録あり。Windows は初回に Git for Windows が必要）。実ファイルを編集できるため、最初は **Ask permissions（確認）モード**のまま・差分を読んでから承認・秘密情報は渡さない、を周知する。CLI 版を使いたい人向けの案内は付録に残してある。
 - **レベル10（機械学習・画像分類）**: 本編は Cowork のサンドボックスで**オフライン動作する公開教材データ（scikit-learn の手書き数字）**を使う（ダウンロード不要）。**医療画像版（MedMNIST）はサンドボックスのネット制限でダウンロード不可のため、デスクトップ版 Code / CLI で実行**する発展扱い。教育デモであり**診断・医療機器ではない**こと、実患者画像は使わないことを必ず周知する。
+- **レベル11（自動化の3層）**: レベル8の発展回。**ハンズオンは Cowork 内で完結する Schedule（定期タスク）を1つ作る**だけ（レベル8と同じく PC ON＋Cowork起動が実行条件）。`/loop`（CLI）と Routines（クラウド）は**比較表とコマンドの紹介**に留め、その場で動かさない。Routines はクラウドで自律実行・別枠の使用量上限（24h で5回）がある点だけ触れる。`/loop` の自動失効期間など細部は情報源で記述が分かれるため断定しない。
 - **Skill の確認**: `pptx`（レベル5）、`pubmed-systematic-review`（レベル4）。**レベル4の Skill は本フォルダに同梱済み**（`skill_pubmed-systematic-review/`）。未導入でも当日その場の `.skill` から導入、または `extracted/SKILL.md` を読んで手動進行できる。
 - **配布物**: 参加者にこのフォルダを共有（Dropbox 共有リンク / USB / 事前ダウンロード等）。
 
@@ -59,8 +61,9 @@
 | 6 | ツールを作ってみたい人 | Chrome 拡張機能（Manifest V3） |
 | 7 | メール処理を自動化したい人 | Gmail MCP・Google カレンダー MCP・Skill 化 |
 | 8 | 毎朝の情報整理を自動化したい人 | 定期実行タスク・カレンダー/PubMed MCP・Web検索 |
-| 9 | CLI版を触ってみたい人 | Claude Code（CLI）・/init・MCP・サブエージェント・Git |
+| 9 | Code を触ってみたい人 | Claude Code（Desktop「Code」タブ）・/init・差分レビュー・MCP・Plan モード・並列セッション・Git（CLI 版は付録） |
 | 10 | AI（機械学習）を作ってみたい人 | Python・scikit-learn・画像分類・評価/可視化（医療画像は Code 版で MedMNIST） |
+| 11 | 自動化を体系で理解したい人 | 定期タスク（Schedule）・/loop（CLI）・Routines（クラウド）の使い分け |
 
 ---
 

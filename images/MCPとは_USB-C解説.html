@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP とは — Claude と外部サービスをつなぐ「USB-C」</title>
+<style>
+  :root{
+    --bg:#f6f8fb;
+    --ink:#1f2937;
+    --sub:#6b7280;
+    --line:#d6deea;
+    --claude:#111827;
+    --mcp:#2563eb;
+    --mcp-soft:#e8efff;
+    --teal:#0ea5a4;
+    --teal-soft:#e2f6f5;
+    --card:#ffffff;
+    --shadow:0 6px 18px rgba(31,41,55,.08);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:28px 20px 56px;}
+  header.title{text-align:center;margin-bottom:8px;}
+  header.title h1{font-size:24px;margin:0 0 4px;letter-spacing:.01em;}
+  header.title p{margin:0;color:var(--sub);font-size:14px;}
+  .badge{display:inline-block;background:var(--mcp-soft);color:var(--mcp);font-size:12px;font-weight:700;
+    padding:3px 12px;border-radius:999px;margin-bottom:12px;}
+
+  section{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:22px 22px 24px;
+    margin-top:18px;
+  }
+  .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .sec-no{flex:none;width:26px;height:26px;border-radius:8px;background:var(--mcp);color:#fff;
+    font-size:14px;font-weight:800;display:grid;place-items:center;}
+  .sec-head h2{font-size:17px;margin:0;}
+  .sec-sub{color:var(--sub);font-size:13.5px;margin:2px 0 16px 36px;}
+
+  /* ---- USB-C cable diagram ---- */
+  .cable{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center;
+    gap:0;
+    margin:6px 0 4px;
+  }
+  .node{
+    border-radius:14px;
+    padding:18px 14px;
+    text-align:center;
+    border:2px solid;
+  }
+  .node.claude{border-color:var(--claude);background:#fff;}
+  .node.claude .n-name{font-size:20px;font-weight:800;color:var(--claude);}
+  .node.claude .n-tag{font-size:11px;color:var(--sub);letter-spacing:.18em;}
+  .node.apps{border-color:var(--teal);background:var(--teal-soft);padding:12px;}
+  .apps-list{display:flex;flex-direction:column;gap:8px;}
+  .app{
+    background:#fff;border:1px solid #cfeceb;border-radius:10px;
+    padding:9px 12px;font-size:14px;font-weight:600;color:#0c6b6a;
+    display:flex;align-items:center;gap:8px;cursor:pointer;transition:.18s;
+  }
+  .app .ico{font-size:16px;}
+  .app:hover,.app.active{background:var(--teal);color:#fff;border-color:var(--teal);transform:translateX(3px);}
+  .app:hover .sm,.app.active .sm{color:rgba(255,255,255,.85);}
+  .app .sm{margin-left:auto;font-size:11px;font-weight:500;color:var(--sub);}
+
+  /* connector in the middle */
+  .connector{display:flex;flex-direction:column;align-items:center;min-width:150px;position:relative;}
+  .wire{height:4px;width:100%;background:linear-gradient(90deg,var(--claude),var(--mcp),var(--teal));border-radius:4px;position:relative;overflow:hidden;}
+  .wire::after{content:"";position:absolute;top:-2px;left:-30%;width:30%;height:8px;
+    background:rgba(255,255,255,.85);filter:blur(2px);border-radius:8px;
+    animation:flow 2.2s linear infinite;}
+  @keyframes flow{from{left:-30%}to{left:110%}}
+  .plug{
+    background:var(--mcp);color:#fff;border-radius:12px;padding:10px 16px;margin:10px 0;
+    box-shadow:0 6px 14px rgba(37,99,235,.35);text-align:center;position:relative;z-index:2;
+  }
+  .plug .p-title{font-size:15px;font-weight:800;letter-spacing:.02em;}
+  .plug .p-sub{font-size:10.5px;opacity:.9;}
+  .plug .usb{font-size:11px;background:rgba(255,255,255,.2);border-radius:6px;padding:1px 7px;display:inline-block;margin-top:4px;}
+  .arrows{font-size:12px;color:var(--mcp);font-weight:700;}
+
+  .takeaway{
+    margin-top:14px;background:var(--mcp-soft);border-left:4px solid var(--mcp);
+    border-radius:8px;padding:11px 14px;font-size:13.5px;color:#1e3a8a;
+  }
+
+  /* detail panel for clicked app */
+  .detail{
+    margin-top:14px;border:1px dashed var(--teal);border-radius:12px;background:var(--teal-soft);
+    padding:13px 15px;font-size:13.5px;color:#0c4a4a;min-height:46px;transition:.2s;
+  }
+  .detail b{color:#0a3a3a;}
+
+  /* ---- capabilities grid ---- */
+  .caps{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:4px;}
+  .cap{background:#fbfdff;border:1px solid var(--line);border-radius:12px;padding:13px 14px;}
+  .cap .c-ico{font-size:20px;}
+  .cap .c-t{font-weight:700;font-size:14px;margin:4px 0 2px;}
+  .cap .c-d{font-size:12.5px;color:var(--sub);}
+
+  /* ---- connector alias note ---- */
+  .alias{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-weight:700;font-size:14px;}
+  .chip.eq{border:none;color:var(--sub);font-size:18px;font-weight:400;}
+  .chip.blue{background:var(--mcp-soft);color:var(--mcp);border-color:#bcd2ff;}
+  .chip.teal{background:var(--teal-soft);color:#0c6b6a;border-color:#aee3e1;}
+
+  /* ---- level 7 example ---- */
+  .lvl{background:linear-gradient(180deg,#fff, #fbfdff);}
+  .eye-hand{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px;}
+  .eh{border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center;background:#fff;}
+  .eh .eh-ico{font-size:26px;}
+  .eh .eh-role{font-weight:800;font-size:15px;margin-top:4px;}
+  .eh .eh-mcp{display:inline-block;margin-top:6px;background:var(--mcp-soft);color:var(--mcp);
+    font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 10px;}
+  .eh .eh-d{font-size:12.5px;color:var(--sub);margin-top:8px;}
+  .flowline{text-align:center;color:var(--sub);font-size:13px;margin-top:14px;}
+  .flowline b{color:var(--ink);}
+
+  .foot{text-align:center;color:var(--sub);font-size:12px;margin-top:22px;}
+  @media(max-width:680px){
+    .cable{grid-template-columns:1fr;gap:10px;}
+    .connector{transform:rotate(90deg);min-width:0;margin:6px 0;}
+    .caps,.eye-hand{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="title">
+    <div class="badge">レベル7 ・ Step 0 解説</div>
+    <h1>MCP とは — Claude と外部サービスをつなぐ「USB-C」</h1>
+    <p>会話だけだった Claude が、外部の道具を“実際に使える”ようになるしくみ</p>
+  </header>
+
+  <!-- (1) USB-C metaphor -->
+  <section>
+    <div class="sec-head"><div class="sec-no">1</div><h2>MCP は「共通の差込口」</h2></div>
+    <div class="sec-sub">スマホやノートPCの USB-C のように、<b>規格が共通</b>だから、いろいろなサービスを Claude にそのまま“差し込める”。</div>
+
+    <div class="cable">
+      <div class="node claude">
+        <div class="n-name">Claude</div>
+        <div class="n-tag">AI</div>
+      </div>
+
+      <div class="connector">
+        <div class="wire"></div>
+        <div class="plug">
+          <div class="p-title">MCP</div>
+          <div class="p-sub">Model Context Protocol</div>
+          <div class="usb">= 共通の差込口（USB-C）</div>
+        </div>
+        <div class="arrows">◀ 読む ・ 書く ▶</div>
+      </div>
+
+      <div class="node apps">
+        <div class="apps-list" id="appsList">
+          <div class="app" data-app="gmail"><span class="ico">📧</span>Gmail<span class="sm">クリック</span></div>
+          <div class="app" data-app="calendar"><span class="ico">📅</span>Google カレンダー<span class="sm">クリック</span></div>
+          <div class="app" data-app="pubmed"><span class="ico">🔬</span>PubMed<span class="sm">クリック</span></div>
+          <div class="app" data-app="notion"><span class="ico">🗒️</span>Notion ほか<span class="sm">クリック</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail" id="detail">右の各サービスをクリックすると、その MCP で何ができるかが表示される。</div>
+
+    <div class="takeaway">要点：MCP に対応したサービスは Claude に“差し込む”だけ。Claude が自分でそのサービスを操作できるようになる ＝ <b>「会話だけ」から「道具を実際に使える」へ</b>。</div>
+  </section>
+
+  <!-- (2) connector alias -->
+  <section>
+    <div class="sec-head"><div class="sec-no">2</div><h2>MCP ＝「コネクタ」</h2></div>
+    <div class="sec-sub">Claude デスクトップの画面では、MCP は <b>「コネクタ（Connectors / Capabilities）」</b> という名前で出てくる。呼び方が違うだけで同じもの。</div>
+    <div class="alias">
+      <span class="chip blue">MCP</span>
+      <span class="chip eq">＝</span>
+      <span class="chip teal">コネクタ</span>
+      <span class="chip eq">＝</span>
+      <span class="chip">設定 → Capabilities から追加する“差込口”</span>
+    </div>
+    <div class="takeaway">迷ったら：設定 → <b>コネクタ / Capabilities</b> を開き、使いたいサービス（Gmail・カレンダーなど）を追加して OAuth 認証する。それが「MCP をつなぐ」操作。</div>
+  </section>
+
+  <!-- (3) what MCP can do -->
+  <section>
+    <div class="sec-head"><div class="sec-no">3</div><h2>MCP でできること</h2></div>
+    <div class="sec-sub">つないだサービスに対して、Claude が代わりに“操作”する。代表的な4つ。</div>
+    <div class="caps">
+      <div class="cap"><div class="c-ico">🔎</div><div class="c-t">探す・読む</div><div class="c-d">未読メールや論文、予定を検索して中身を取得する。</div></div>
+      <div class="cap"><div class="c-ico">✍️</div><div class="c-t">作る・書き込む</div><div class="c-d">カレンダーに予定を登録、下書きメールを作成する。</div></div>
+      <div class="cap"><div class="c-ico">🔄</div><div class="c-t">つなぐ・移す</div><div class="c-d">メールの情報を予定表へ、論文を執筆ツールへ橋渡しする。</div></div>
+      <div class="cap"><div class="c-ico">🤖</div><div class="c-t">まとめて任せる</div><div class="c-d">複数サービスをまたぐ作業を一連の流れとして実行する。</div></div>
+    </div>
+    <div class="takeaway">＝ Claude が“目（読む）”と“手（書く）”を手に入れる。今回はその両方を使う。</div>
+  </section>
+
+  <!-- (4) level 7 example -->
+  <section class="lvl">
+    <div class="sec-head"><div class="sec-no">7</div><h2>このレベルでつなぐ MCP</h2></div>
+    <div class="sec-sub">未読メールから予定を拾って、確認のうえカレンダーに登録する。使うのは2つの MCP。</div>
+    <div class="eye-hand">
+      <div class="eh">
+        <div class="eh-ico">👀</div>
+        <div class="eh-role">読む“目”</div>
+        <div class="eh-mcp">Gmail MCP</div>
+        <div class="eh-d">未読メールを読み、日時のある予定を見つける。</div>
+      </div>
+      <div class="eh">
+        <div class="eh-ico">✋</div>
+        <div class="eh-role">書く“手”</div>
+        <div class="eh-mcp">Google カレンダー MCP</div>
+        <div class="eh-d">あなたが OK したものだけ、予定として登録する。</div>
+      </div>
+    </div>
+    <div class="flowline">完成イメージ：<b>未読メール</b> → 日時のある予定を一覧化 → <b>あなたが選んだものだけ</b> → <b>カレンダーに登録</b></div>
+    <div class="takeaway">安全の要点：登録は<b>必ず確認してから</b>・機微情報はタイトル/説明に<b>残さない</b>・重複は事前チェック。</div>
+  </section>
+
+  <div class="foot">レベル7「未読メールからカレンダー登録」 Step 0 解説用インフォグラフィック</div>
+</div>
+
+<script>
+  var info = {
+    gmail:    '<b>Gmail MCP：</b>未読メールを検索して件名・差出人・本文の要点を取得できる。今回は「日時のある予定」を見つける“目”として使う。',
+    calendar: '<b>Google カレンダー MCP：</b>予定の一覧取得・重複チェック・新規登録ができる。確認が取れた予定だけを書き込む“手”として使う。',
+    pubmed:   '<b>PubMed MCP：</b>検索式を立てて論文を取得し、RIS で執筆ツールへ渡せる（レベル3で体験）。同じ“差込口”の別のサービス例。',
+    notion:   '<b>Notion など：</b>ドキュメント検索・作成・更新ができる。MCP 対応なら、ほかにも多数のサービスを同じ要領でつなげる。'
+  };
+  var apps = document.querySelectorAll('.app');
+  var detail = document.getElementById('detail');
+  apps.forEach(function(el){
+    el.addEventListener('click', function(){
+      apps.forEach(function(a){a.classList.remove('active');});
+      el.classList.add('active');
+      detail.innerHTML = info[el.dataset.app];
+    });
+  });
+</script>
+</body>
+</html>
