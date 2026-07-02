@@ -1,4 +1,4 @@
-# レベル3 — PubMed MCP で文献検索（EndNote 連携デモ付き）
+# レベル4 — PubMed MCP で文献検索（EndNote 連携デモ付き）
 
 **ねらい**: PubMed MCP を使って、検索式の立案から文献取得までを体験し、さらに EndNote × Word での参考文献リスト作成までつなげる。
 
